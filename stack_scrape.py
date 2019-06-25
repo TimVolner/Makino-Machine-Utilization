@@ -1,5 +1,5 @@
 #Created 6/14/19
-#Last Updated 6/16/19 3:41PM PCT
+#Last Updated 6/24/19 6:45PM PCT
 
 from requests import get
 from requests.exceptions import RequestException
@@ -14,10 +14,7 @@ def simple_get(url):
     #Try getting content from url. If it is HTML or XML it will return the content, otherwise it returns NONE
     try:
         with closing(get(url, stream=True)) as cont:
-            if is_good_response(cont):
-                return cont.text
-            else:
-                return None
+            return(cont.text if is_good_response(cont) else None)
 
     except RequestException as e:
         log_error('Could Not Connect To {0} : {1}'.format(url, str(e)))
@@ -56,8 +53,7 @@ def write_code_file(soup, libs, inp_all):
         
         # if code has user requested libraries, replace html tags with characters and write code to file        
         if lib_in_data:
-            for i, j in dic.items():
-                l = l.replace(i, j)
+            l = list(l.replace(i, j) for i, j in dic.items())
             
             # Only add code if there are at least 10 lines of code
             if l.count('\n') > 10:
@@ -113,11 +109,8 @@ def main():
     libs = inp_libs.split(", ")
 
     # set beginning html here. If user is search all libraries input, we will make the search slightly more efficient
-    if inp_all == 'ALL':
-        html_list = ["https://stackoverflow.com/questions/tagged/" + libs[0]]
-    else:
-        html_list = ["https://stackoverflow.com/questions/"]
-
+    html_list = (["https://stackoverflow.com/questions/tagged/" + libs[0]] if inp_all == 'ALL' else ["https://stackoverflow.com/questions/"])
+  
     used_html = []    
 
     # Run this program until all htmls have been scraped
